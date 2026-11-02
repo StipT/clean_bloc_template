@@ -7,9 +7,7 @@ import 'package:get_it/get_it.dart';
 /// Shared startup for every flavor entrypoint.
 void bootstrap({GetIt? getIt, AppConfig? config}) {
   WidgetsFlutterBinding.ensureInitialized();
-  configureDependencies(
-    getIt ?? GetIt.instance,
-    config ?? AppConfig.fromEnvironment(),
-  );
-  runApp(const App());
+  final container = getIt ?? GetIt.instance;
+  configureDependencies(container, config ?? AppConfig.fromEnvironment());
+  runApp(App(getIt: container));
 }
