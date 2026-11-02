@@ -1,16 +1,83 @@
 # Flutter BLoC Template
 
-Melos 7 pub workspace (`apps/app`). Flutter version is pinned in `.fvmrc`.
+A GitHub template repository for Flutter apps (Android and iOS) built with Clean
+Architecture and BLoC. It ships a Melos 7 pub workspace, localization (English and
+Croatian), `go_router` navigation, a small design system, an `http`-based network
+layer, `dev`/`staging`/`prod` flavors, typed env config and CI/CD (GitHub Actions +
+Codemagic). A `posts` demo feature shows the full pattern end to end.
+
+Flutter is pinned in `.fvmrc`, the single source of truth for GitHub Actions and Codemagic.
+Design decisions are recorded in [`docs/adr`](docs/adr); see also [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Architecture
+
+Per feature, dependencies point inward: `presentation` and `data` both depend on
+`domain`; `domain` is pure Dart. `get_it` is used only in the composition root
+(`apps/app/lib/injection.dart`).
+
+```mermaid
+flowchart LR
+  UI[presentation<br/>Page + Bloc] --> UC[domain<br/>use case]
+  UC --> RI[domain<br/>repository interface]
+  RIMPL[data<br/>repository impl] -. implements .-> RI
+  RIMPL --> DS[data<br/>remote data source]
+  DS --> API[network<br/>ApiClient]
+  API --> HTTP[(package:http)]
+  UC -. returns .-> R[core<br/>Result / Failure]
+```
+
+Errors are modelled with a hand-written sealed `Result<T>` (`Success`/`Failure`) and a
+sealed `Failure`, both in `core`.
+
+## Package layout
+
+```
+apps/app/               app: entrypoints, bootstrap, injection.dart, features/*
+  lib/features/<name>/  data/ domain/ presentation/
+  config/               <flavor>.example.json
+packages/core/          Result, Failure
+packages/network/       ApiClient, logging and auth http decorators
+packages/design_system/ theme tokens, AppButton, AppTextField, AppLoader, ErrorView, EmptyView
+packages/l10n/          ARB (en, hr), LocaleCubit, ThemeCubit, settings page
+packages/navigation/    go_router setup and routes
+tool/                   init, setup_repo.sh, coverage_check.dart, copilot_review_gate.sh
+docs/adr/               architecture decision records
+```
+
+## Use this template
+
+1. Click **Use this template** on GitHub (or `gh repo create <name> --template StipT/clean_bloc_template`) and clone your new repo.
+2. Run `tool/init` (below) to rename the app, package and bundle IDs.
+3. Run `melos bootstrap`.
+
+### Initialising a new app
+
+```bash
+tool/init --name "Acme Shop" --package acme_shop --bundle-id com.acme.shop \
+  [--repo acme/shop] [--skip-repo-setup] [--dry-run]
+```
+
+- `--name`: display name (flavors become `Acme Shop Dev` / `Acme Shop Staging`).
+- `--package`: Dart package name (`snake_case`); rewrites pubspecs and all package imports.
+- `--bundle-id`: base application/bundle ID; flavors get `.dev` / `.staging`.
+  Updates Android `applicationId`/`namespace`/Kotlin package dirs, iOS bundle IDs,
+  xcconfigs, flavorizr config, `codemagic.yaml` and this README's title.
+- `--dry-run` lists what would change and writes nothing.
+- Unless `--skip-repo-setup` is given, it finally runs `tool/setup_repo.sh [--repo]`
+  (needs `gh` with admin rights).
+
+`tool/init*` keeps the old names by design and can be deleted afterwards. Tests: `tool/test/init_test.sh`.
+
+## Running
 
 ```sh
 dart pub global activate melos
 melos bootstrap
 melos analyze
-melos test
-melos run coverage:check   # tests + 90% merged-lcov gate
+melos run format:check
 ```
 
-## Flavors
+### Flavors
 
 `dev`, `staging`, `prod` (flutter_flavorizr config lives in `apps/app/pubspec.yaml`;
 generated native config is committed). Each has its own app name, bundle/application
@@ -29,10 +96,46 @@ flutter build ipa --flavor prod -t lib/main_prod.dart --dart-define-from-file=co
 All entrypoints call `bootstrap()` (`lib/bootstrap.dart`). To regenerate native config
 after editing the `flavorizr:` block: `dart run flutter_flavorizr -f` (in `apps/app`).
 
-Coverage exclusions (`tool/coverage_check.dart`): `*.g.dart`, generated l10n,
-`main_*.dart`, `injection.dart`.
+## Environment and config
 
-## Codemagic
+Values come from `--dart-define-from-file=apps/app/config/<flavor>.json` and are read via
+`AppConfig`. Copy `apps/app/config/<flavor>.example.json` to `<flavor>.json` (gitignored).
+Any value shipped in the client is extractable; never put secrets in these files.
+In CI, Codemagic variable groups supply the file contents (see Codemagic below).
+
+## Testing and coverage
+
+```sh
+melos test                 # flutter test --coverage in every package with tests
+melos run coverage:check   # tests + 90% merged-lcov gate
+```
+
+Coverage must stay at or above 90% over the merged lcov report. Exclusions
+(`tool/coverage_check.dart`): `*.g.dart`, generated l10n, `main_*.dart`, `injection.dart`.
+Tooling tests: `tool/test/init_test.sh`, `tool/test/copilot_review_gate_test.sh`.
+
+## CI (GitHub Actions)
+
+`.github/workflows/pr.yml` runs on pull requests: `lint` (`melos run format:check` +
+`melos run analyze`), then `test` (`needs: lint`, runs `melos run coverage:check`).
+
+### Copilot review gate and ruleset
+
+`.github/workflows/copilot-review-gate.yml` requests a Copilot review if none
+exists, polls up to ~10 min, and fails while Copilot has unresolved review
+threads (resolve them to pass). Copilot code review must be enabled for the
+repo/org; expect some noisy comments. Layering rules for Copilot live in
+`.github/copilot-instructions.md`.
+
+Run `tool/setup_repo.sh [owner/repo]` (needs `gh` with admin rights; safe to
+re-run; `--dry-run` prints the ruleset) to create the `main-protection` ruleset.
+
+Manual fallback: Settings -> Rules -> Rulesets -> New branch ruleset targeting
+the default branch; require a pull request, require status checks `lint`,
+`test`, `copilot-review-gate`, and enable "Automatically request Copilot code
+review". Tests: `tool/test/copilot_review_gate_test.sh`.
+
+## Codemagic (CD)
 
 `codemagic.yaml` defines four workflows. Each runs `melos bootstrap`, `melos run analyze` and
 `melos run test` before building. Flutter version comes from `.fvmrc` (`flutter: fvm`).
@@ -53,7 +156,7 @@ Setup (nothing secret is committed; all values are entered in the Codemagic UI):
 1. Add the repo as an application and let Codemagic detect `codemagic.yaml`.
 2. Variable groups (mark values *Secret*):
    - `staging_config` / `prod_config`: `APP_CONFIG_JSON` = full contents of the flavor's
-     `config/<flavor>.json` (see Config; client-shipped values are not secret).
+     `config/<flavor>.json` (see Environment and config; client-shipped values are not secret).
    - `google_play`: `GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS` (service account JSON).
    - `firebase`: `FIREBASE_SERVICE_ACCOUNT` (service account JSON).
 3. Team integrations / code signing identities:
@@ -68,47 +171,6 @@ Setup (nothing secret is committed; all values are entered in the Codemagic UI):
 
 Android release builds sign with the Codemagic keystore only when `CI=true`
 (`apps/app/android/app/build.gradle.kts`); locally they still use debug keys.
-
-## Initialising a new app
-
-After cloning the template, rename everything in one step:
-
-```bash
-tool/init --name "Acme Shop" --package acme_shop --bundle-id com.acme.shop \
-  [--repo acme/shop] [--skip-repo-setup] [--dry-run]
-```
-
-- `--name`: display name (flavors become `Acme Shop Dev` / `Acme Shop Staging`).
-- `--package`: Dart package name (`snake_case`); rewrites pubspecs and all package imports.
-- `--bundle-id`: base application/bundle ID; flavors get `.dev` / `.staging`.
-  Updates Android `applicationId`/`namespace`/Kotlin package dirs, iOS bundle IDs,
-  xcconfigs, flavorizr config, `codemagic.yaml` and this README's title.
-- `--dry-run` lists what would change and writes nothing.
-- Unless `--skip-repo-setup` is given, it finally runs `tool/setup_repo.sh [--repo]`
-  (needs `gh` with admin rights).
-
-Then run `melos bootstrap`. `tool/init*` keeps the old names by design and can be
-deleted afterwards. Tests: `tool/test/init_test.sh`.
-
-## Copilot review gate and repo setup
-
-`.github/workflows/copilot-review-gate.yml` requests a Copilot review if none
-exists, polls up to ~10 min, and fails while Copilot has unresolved review
-threads (resolve them to pass). Copilot code review must be enabled for the
-repo/org; expect some noisy comments. Layering rules for Copilot live in
-`.github/copilot-instructions.md`.
-
-Run `tool/setup_repo.sh [owner/repo]` (needs `gh` with admin rights; safe to
-re-run; `--dry-run` prints the ruleset) to create the `main-protection` ruleset.
-
-Manual fallback: Settings -> Rules -> Rulesets -> New branch ruleset targeting
-the default branch; require a pull request, require status checks `lint`,
-`test`, `copilot-review-gate`, and enable "Automatically request Copilot code
-review". Tests: `tool/test/copilot_review_gate_test.sh`.
-
-## Config
-
-Values come from `--dart-define-from-file=apps/app/config/<flavor>.json` and are read via `AppConfig`. Copy `apps/app/config/<flavor>.example.json` to `<flavor>.json` (gitignored). Any value shipped in the client is extractable; never put secrets in these files.
 
 ## Demo feature: posts
 
@@ -130,3 +192,7 @@ case -> `PostsBloc` -> `PostsPage`, with loading/error/empty states.
 5. If unused, drop `bloc_test`/`mocktail`/`http` only after your own tests stop
    needing them; set `BASE_URL` in `apps/app/config/*.json` to your API.
 6. Run `melos bootstrap && melos analyze && melos run coverage:check`.
+
+## License
+
+[MIT](LICENSE)
