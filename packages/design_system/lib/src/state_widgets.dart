@@ -42,13 +42,13 @@ class _MessageView extends StatelessWidget {
 class ErrorView extends StatelessWidget {
   const ErrorView({
     required this.message,
-    this.retryLabel,
+    required this.retryLabel,
     this.onRetry,
     super.key,
   });
 
   final String message;
-  final String? retryLabel;
+  final String retryLabel;
   final VoidCallback? onRetry;
 
   @override
@@ -58,7 +58,7 @@ class ErrorView extends StatelessWidget {
       message: message,
       action: onRetry == null
           ? null
-          : AppButton(label: retryLabel ?? 'Retry', onPressed: onRetry),
+          : AppButton(label: retryLabel, onPressed: onRetry),
     );
   }
 }

@@ -8,5 +8,10 @@
   "themeLabel": "Tema",
   "themeSystem": "Sustav",
   "themeLight": "Svijetla",
-  "themeDark": "Tamna"
+  "themeDark": "Tamna",
+  "postsTitle": "Objave",
+  "postsEmpty": "Još nema objava",
+  "errorGeneric": "Nešto je pošlo po zlu",
+  "retryLabel": "Pokušaj ponovno",
+  "appTitle": "Flutter BLoC predložak"
 }

@@ -34,4 +34,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get themeDark => 'Dark';
+
+  @override
+  String get postsTitle => 'Posts';
+
+  @override
+  String get postsEmpty => 'No posts yet';
+
+  @override
+  String get errorGeneric => 'Something went wrong';
+
+  @override
+  String get retryLabel => 'Retry';
+
+  @override
+  String get appTitle => 'Flutter BLoC Template';
 }

@@ -147,9 +147,13 @@ review". Tests: `tool/test/copilot_review_gate_test.sh`.
 | `android-prod` | tag `v*` | Google Play (`production`, submitted as draft) |
 | `ios-prod` | tag `v*` | App Store Connect (upload only) |
 
-Build number = latest store build + 1 (Google Play / App Store Connect); version name comes
-from `apps/app/pubspec.yaml`. `android-staging` falls back to Codemagic's build number until
-the staging package exists on Google Play.
+Build numbers: `android-staging` uses Codemagic's monotonic `$PROJECT_BUILD_NUMBER` (no Google
+Play dependency; its workflow does not use the `google_play` group). `android-prod` and the iOS
+workflows use latest store build + 1. Version name comes from `apps/app/pubspec.yaml`.
+
+**Production is never auto-released:** `android-prod` only submits a draft to the Google Play
+`production` track and `ios-prod` only uploads to App Store Connect. Promote/submit for review
+manually in each store console.
 
 Setup (nothing secret is committed; all values are entered in the Codemagic UI):
 
@@ -157,7 +161,7 @@ Setup (nothing secret is committed; all values are entered in the Codemagic UI):
 2. Variable groups (mark values *Secret*):
    - `staging_config` / `prod_config`: `APP_CONFIG_JSON` = full contents of the flavor's
      `config/<flavor>.json` (see Environment and config; client-shipped values are not secret).
-   - `google_play`: `GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS` (service account JSON).
+   - `google_play` (prod workflow only): `GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS` (service account JSON).
    - `firebase`: `FIREBASE_SERVICE_ACCOUNT` (service account JSON).
 3. Team integrations / code signing identities:
    - Developer Portal: App Store Connect API key named `codemagic` (App Manager role).

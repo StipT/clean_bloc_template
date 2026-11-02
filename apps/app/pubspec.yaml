@@ -19,6 +19,7 @@ dependencies:
     sdk: flutter
   get_it: ^9.3.0
   go_router: ^17.0.0
+  http: ^1.2.0
   l10n:
   navigation:
   network:
@@ -29,7 +30,6 @@ dev_dependencies:
   flutter_flavorizr: ^2.5.0
   flutter_test:
     sdk: flutter
-  http: ^1.2.0
   mocktail: ^1.0.4
   very_good_analysis: ^10.0.0
 

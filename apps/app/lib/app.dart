@@ -1,18 +1,17 @@
 import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_template/features/posts/presentation/posts_bloc.dart';
 import 'package:flutter_bloc_template/features/posts/presentation/posts_page.dart';
+import 'package:flutter_bloc_template/injection.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:l10n/l10n.dart';
 import 'package:navigation/navigation.dart';
 
 class App extends StatefulWidget {
-  const App({required this.getIt, super.key});
+  const App({required this.dependencies, super.key});
 
-  final GetIt getIt;
+  final AppDependencies dependencies;
 
   @override
   State<App> createState() => _AppState();
@@ -20,7 +19,8 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   late final GoRouter _router = createAppRouter(
-    postsBuilder: (_) => PostsPage(createBloc: () => widget.getIt<PostsBloc>()),
+    postsBuilder: (_) =>
+        PostsPage(createBloc: widget.dependencies.createPostsBloc),
     settingsBuilder: (_) => const SettingsPage(),
   );
 
@@ -28,13 +28,13 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider.value(value: widget.getIt<LocaleCubit>()),
-        BlocProvider.value(value: widget.getIt<ThemeCubit>()),
+        BlocProvider.value(value: widget.dependencies.localeCubit),
+        BlocProvider.value(value: widget.dependencies.themeCubit),
       ],
       child: BlocBuilder<LocaleCubit, Locale?>(
         builder: (context, locale) => BlocBuilder<ThemeCubit, ThemeMode>(
           builder: (context, themeMode) => MaterialApp.router(
-            title: 'Flutter BLoC Template',
+            onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
             routerConfig: _router,
             theme: AppTheme.light,
             darkTheme: AppTheme.dark,

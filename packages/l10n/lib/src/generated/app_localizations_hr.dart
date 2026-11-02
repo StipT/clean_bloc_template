@@ -34,4 +34,19 @@ class AppLocalizationsHr extends AppLocalizations {
 
   @override
   String get themeDark => 'Tamna';
+
+  @override
+  String get postsTitle => 'Objave';
+
+  @override
+  String get postsEmpty => 'Još nema objava';
+
+  @override
+  String get errorGeneric => 'Nešto je pošlo po zlu';
+
+  @override
+  String get retryLabel => 'Pokušaj ponovno';
+
+  @override
+  String get appTitle => 'Flutter BLoC predložak';
 }

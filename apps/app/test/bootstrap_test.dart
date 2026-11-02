@@ -1,19 +1,18 @@
+import 'package:flutter_bloc_template/app.dart';
 import 'package:flutter_bloc_template/bootstrap.dart';
 import 'package:flutter_bloc_template/config/app_config.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  testWidgets('bootstrap registers the config and starts the app', (
+  testWidgets('bootstrap composes dependencies and starts the app', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
-    final getIt = GetIt.asNewInstance();
-    const config = AppConfig(baseUrl: 'https://example.test');
 
-    await bootstrap(getIt: getIt, config: config);
+    await bootstrap(config: const AppConfig(baseUrl: 'https://example.test'));
+    await tester.pump();
 
-    expect(getIt<AppConfig>(), config);
+    expect(find.byType(App), findsOneWidget);
   });
 }

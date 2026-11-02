@@ -8,5 +8,10 @@
   "themeLabel": "Theme",
   "themeSystem": "System",
   "themeLight": "Light",
-  "themeDark": "Dark"
+  "themeDark": "Dark",
+  "postsTitle": "Posts",
+  "postsEmpty": "No posts yet",
+  "errorGeneric": "Something went wrong",
+  "retryLabel": "Retry",
+  "appTitle": "Flutter BLoC Template"
 }
