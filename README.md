@@ -29,3 +29,7 @@ Manual fallback: Settings -> Rules -> Rulesets -> New branch ruleset targeting
 the default branch; require a pull request, require status checks `lint`,
 `test`, `copilot-review-gate`, and enable "Automatically request Copilot code
 review". Tests: `tool/test/copilot_review_gate_test.sh`.
+
+## Config
+
+Values come from `--dart-define-from-file=apps/app/config/<flavor>.json` and are read via `AppConfig`. Copy `apps/app/config/<flavor>.example.json` to `<flavor>.json` (gitignored). Any value shipped in the client is extractable; never put secrets in these files.
