@@ -26,6 +26,7 @@ dependencies:
 
 dev_dependencies:
   bloc_test: ^10.0.0
+  flutter_flavorizr: ^2.5.0
   flutter_test:
     sdk: flutter
   http: ^1.2.0
@@ -34,3 +35,50 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+flavorizr:
+  ide: idea
+  instructions:
+    - assets:download
+    - assets:extract
+    - android:flavorizrGradle
+    - android:buildGradle
+    - android:androidManifest
+    - android:icons
+    - ios:xcconfig
+    - ios:buildTargets
+    - ios:schema
+    - ios:plist
+    - ios:icons
+    - assets:clean
+  flavors:
+    dev:
+      app:
+        name: "Template Dev"
+        icon: "assets/icons/dev.png"
+      android:
+        applicationId: "dev.invoketech.flutter_bloc_template.dev"
+        icon: "assets/icons/dev.png"
+      ios:
+        bundleId: "dev.invoketech.flutter_bloc_template.dev"
+        icon: "assets/icons/dev.png"
+    staging:
+      app:
+        name: "Template Staging"
+        icon: "assets/icons/staging.png"
+      android:
+        applicationId: "dev.invoketech.flutter_bloc_template.staging"
+        icon: "assets/icons/staging.png"
+      ios:
+        bundleId: "dev.invoketech.flutter_bloc_template.staging"
+        icon: "assets/icons/staging.png"
+    prod:
+      app:
+        name: "Template"
+        icon: "assets/icons/prod.png"
+      android:
+        applicationId: "dev.invoketech.flutter_bloc_template"
+        icon: "assets/icons/prod.png"
+      ios:
+        bundleId: "dev.invoketech.flutter_bloc_template"
+        icon: "assets/icons/prod.png"
