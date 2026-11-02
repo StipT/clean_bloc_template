@@ -32,6 +32,43 @@ after editing the `flavorizr:` block: `dart run flutter_flavorizr -f` (in `apps/
 Coverage exclusions (`tool/coverage_check.dart`): `*.g.dart`, generated l10n,
 `main_*.dart`, `injection.dart`.
 
+## Codemagic
+
+`codemagic.yaml` defines four workflows. Each runs `melos bootstrap`, `melos run analyze` and
+`melos run test` before building. Flutter version comes from `.fvmrc` (`flutter: fvm`).
+
+| Workflow | Trigger | Output |
+| --- | --- | --- |
+| `android-staging` | push to `develop` | Firebase App Distribution |
+| `ios-staging` | push to `develop` | TestFlight (internal testing only) |
+| `android-prod` | tag `v*` | Google Play (`production`, submitted as draft) |
+| `ios-prod` | tag `v*` | App Store Connect (upload only) |
+
+Build number = latest store build + 1 (Google Play / App Store Connect); version name comes
+from `apps/app/pubspec.yaml`. `android-staging` falls back to Codemagic's build number until
+the staging package exists on Google Play.
+
+Setup (nothing secret is committed; all values are entered in the Codemagic UI):
+
+1. Add the repo as an application and let Codemagic detect `codemagic.yaml`.
+2. Variable groups (mark values *Secret*):
+   - `staging_config` / `prod_config`: `APP_CONFIG_JSON` = full contents of the flavor's
+     `config/<flavor>.json` (see Config; client-shipped values are not secret).
+   - `google_play`: `GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS` (service account JSON).
+   - `firebase`: `FIREBASE_SERVICE_ACCOUNT` (service account JSON).
+3. Team integrations / code signing identities:
+   - Developer Portal: App Store Connect API key named `codemagic` (App Manager role).
+   - Android keystores named `staging_keystore` and `prod_keystore`.
+   - iOS signing is fetched via the API key; `bundle_identifier` is set per workflow.
+4. Replace placeholders in `codemagic.yaml`: `FIREBASE_ANDROID_APP_ID`, the
+   `APP_STORE_APPLE_ID` values, the Firebase tester group (`testers`), and the
+   bundle/package IDs if you renamed them.
+5. Create the app records in Google Play and App Store Connect (upload the first build manually).
+6. Release: push to `develop` for staging; `git tag v1.2.3 && git push --tags` for prod.
+
+Android release builds sign with the Codemagic keystore only when `CI=true`
+(`apps/app/android/app/build.gradle.kts`); locally they still use debug keys.
+
 ## Copilot review gate and repo setup
 
 `.github/workflows/copilot-review-gate.yml` requests a Copilot review if none
