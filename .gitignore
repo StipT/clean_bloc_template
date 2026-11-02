@@ -49,3 +49,7 @@ app.*.map.json
 pubspec_overrides.yaml
 **/coverage/
 **/build/
+
+# Real config (copy from *.example.json)
+apps/app/config/*.json
+!apps/app/config/*.example.json

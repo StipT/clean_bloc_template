@@ -6,8 +6,13 @@ environment:
 
 workspace:
   - apps/app
+<<<<<<< HEAD
   - packages/core
   - packages/network
+=======
+  - packages/navigation
+  - packages/design_system
+>>>>>>> stipt-flutter-bloc-template
 
 dev_dependencies:
   melos: ^7.0.0
