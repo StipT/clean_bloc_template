@@ -40,6 +40,11 @@ grep -q '^name: acme_shop$' "$d/apps/app/pubspec.yaml" || fail "pubspec name"
 grep -q '^name: acme_shop_workspace$' "$d/pubspec.yaml" || fail "workspace name"
 grep -rq 'package:acme_shop/' "$d/apps/app/lib" || fail "imports"
 ok "package rename"
+# directives_ordering lint: package imports must stay alphabetical
+while IFS= read -r f; do
+  { grep "^import 'package:" "$f" || true; } | LC_ALL=C sort -c 2>/dev/null || fail "import order in $f"
+done < <(find "$d/apps" "$d/packages" -name '*.dart' -not -path '*/.dart_tool/*')
+ok "package imports sorted"
 f="$d/apps/app/android/app/build.gradle.kts"
 grep -q 'namespace = "com.acme.shop"' "$f" || fail "namespace"
 grep -q 'applicationId = "com.acme.shop"' "$f" || fail "applicationId"

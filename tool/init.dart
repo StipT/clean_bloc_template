@@ -134,6 +134,7 @@ List<String> rewriteFiles({
       continue;
     }
     var updated = _transform(rel, original, name, package, bundle);
+    if (rel.endsWith('.dart')) updated = _sortPackageImports(updated);
     if (rel == 'README.md') {
       updated = updated.replaceFirst(RegExp(r'^# .*$', multiLine: true), '# $name');
     }
@@ -165,4 +166,26 @@ String? moveKotlinPackage(String root, String bundle, {required bool dryRun}) {
     dir = dir.parent;
   }
   return desc;
+}
+
+/// Keeps each contiguous block of `package:` imports alphabetical, as the
+/// directives_ordering lint requires after a package rename.
+String _sortPackageImports(String source) {
+  final lines = source.split('\n');
+  final out = <String>[];
+  var i = 0;
+  bool isImport(String l) => l.startsWith("import 'package:");
+  while (i < lines.length) {
+    if (!isImport(lines[i])) {
+      out.add(lines[i++]);
+      continue;
+    }
+    final block = <String>[];
+    while (i < lines.length && isImport(lines[i])) {
+      block.add(lines[i++]);
+    }
+    block.sort();
+    out.addAll(block);
+  }
+  return out.join('\n');
 }
