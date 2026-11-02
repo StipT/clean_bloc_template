@@ -1,0 +1,12 @@
+{
+  "@@locale": "en",
+  "settingsTitle": "Settings",
+  "languageLabel": "Language",
+  "languageSystem": "System default",
+  "languageEnglish": "English",
+  "languageCroatian": "Croatian",
+  "themeLabel": "Theme",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark"
+}

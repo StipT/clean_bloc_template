@@ -1,0 +1,26 @@
+name: l10n
+description: Localization, locale/theme cubits and the settings page.
+publish_to: none
+version: 0.1.0
+resolution: workspace
+
+environment:
+  sdk: ^3.10.0
+
+dependencies:
+  bloc: ^9.0.0
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^9.1.0
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  shared_preferences: ^2.5.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^10.0.0
+
+flutter:
+  generate: true
