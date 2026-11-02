@@ -1,0 +1,15 @@
+name: core
+description: Result and Failure types shared across packages.
+publish_to: none
+version: 1.0.0
+resolution: workspace
+
+environment:
+  sdk: ^3.10.0
+
+dependencies:
+  equatable: ^2.0.7
+
+dev_dependencies:
+  test: ^1.25.0
+  very_good_analysis: ^10.0.0

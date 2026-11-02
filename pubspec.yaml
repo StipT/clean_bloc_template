@@ -6,6 +6,8 @@ environment:
 
 workspace:
   - apps/app
+  - packages/core
+  - packages/network
 
 dev_dependencies:
   melos: ^7.0.0
