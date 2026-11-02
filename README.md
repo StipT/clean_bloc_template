@@ -13,3 +13,7 @@ cd apps/app && flutter run -t lib/main_dev.dart
 
 Coverage exclusions (`tool/coverage_check.dart`): `*.g.dart`, generated l10n,
 `main_*.dart`, `injection.dart`.
+
+## Config
+
+Values come from `--dart-define-from-file=apps/app/config/<flavor>.json` and are read via `AppConfig`. Copy `apps/app/config/<flavor>.example.json` to `<flavor>.json` (gitignored). Any value shipped in the client is extractable; never put secrets in these files.

@@ -10,6 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  get_it: ^9.3.0
 
 dev_dependencies:
   flutter_test:
