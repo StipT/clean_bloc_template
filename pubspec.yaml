@@ -6,6 +6,8 @@ environment:
 
 workspace:
   - apps/app
+  - packages/core
+  - packages/network
   - packages/navigation
   - packages/design_system
 
