@@ -69,6 +69,27 @@ Setup (nothing secret is committed; all values are entered in the Codemagic UI):
 Android release builds sign with the Codemagic keystore only when `CI=true`
 (`apps/app/android/app/build.gradle.kts`); locally they still use debug keys.
 
+## Initialising a new app
+
+After cloning the template, rename everything in one step:
+
+```bash
+tool/init --name "Acme Shop" --package acme_shop --bundle-id com.acme.shop \
+  [--repo acme/shop] [--skip-repo-setup] [--dry-run]
+```
+
+- `--name`: display name (flavors become `Acme Shop Dev` / `Acme Shop Staging`).
+- `--package`: Dart package name (`snake_case`); rewrites pubspecs and all package imports.
+- `--bundle-id`: base application/bundle ID; flavors get `.dev` / `.staging`.
+  Updates Android `applicationId`/`namespace`/Kotlin package dirs, iOS bundle IDs,
+  xcconfigs, flavorizr config, `codemagic.yaml` and this README's title.
+- `--dry-run` lists what would change and writes nothing.
+- Unless `--skip-repo-setup` is given, it finally runs `tool/setup_repo.sh [--repo]`
+  (needs `gh` with admin rights).
+
+Then run `melos bootstrap`. `tool/init*` keeps the old names by design and can be
+deleted afterwards. Tests: `tool/test/init_test.sh`.
+
 ## Copilot review gate and repo setup
 
 `.github/workflows/copilot-review-gate.yml` requests a Copilot review if none
