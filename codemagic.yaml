@@ -1,0 +1,242 @@
+# Codemagic CD. Setup (variable groups, integrations, triggers): README "Codemagic".
+# Flutter version comes from .fvmrc. No secrets live in this file.
+workflows:
+  android-staging:
+    name: Android staging (Firebase App Distribution)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      flutter: fvm
+      android_signing:
+        - staging_keystore
+      groups:
+        - staging_config
+        - google_play
+        - firebase
+      vars:
+        PACKAGE_NAME: "dev.invoketech.flutter_bloc_template.staging"
+        FIREBASE_ANDROID_APP_ID: "REPLACE_WITH_FIREBASE_APP_ID"
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: develop
+          include: true
+          source: true
+    scripts:
+      - name: Bootstrap
+        script: |
+          dart pub global activate melos
+          export PATH="$PATH:$HOME/.pub-cache/bin"
+          melos bootstrap
+      - name: Analyze
+        script: |
+          export PATH="$PATH:$HOME/.pub-cache/bin"
+          melos run analyze
+      - name: Test
+        script: |
+          export PATH="$PATH:$HOME/.pub-cache/bin"
+          melos run test
+      - name: Create flavor config from variable group
+        script: |
+          printf '%s' "$APP_CONFIG_JSON" > apps/app/config/staging.json
+      - name: Build AAB
+        working_directory: apps/app
+        script: |
+          # Latest Play build + 1; falls back to the Codemagic build number
+          # while the staging package is not on Google Play.
+          LATEST=$(google-play get-latest-build-number --package-name "$PACKAGE_NAME" 2>/dev/null || echo 0)
+          BUILD_NUMBER=$(( LATEST > 0 ? LATEST + 1 : PROJECT_BUILD_NUMBER ))
+          flutter build appbundle --release --flavor staging \
+            -t lib/main_staging.dart \
+            --dart-define-from-file=config/staging.json \
+            --build-number=$BUILD_NUMBER
+    artifacts:
+      - apps/app/build/**/outputs/**/*.aab
+      - apps/app/build/**/outputs/**/mapping.txt
+    publishing:
+      firebase:
+        firebase_service_account: $FIREBASE_SERVICE_ACCOUNT
+        android:
+          app_id: $FIREBASE_ANDROID_APP_ID
+          groups:
+            - testers
+
+  ios-staging:
+    name: iOS staging (TestFlight internal)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: codemagic
+    environment:
+      flutter: fvm
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: dev.invoketech.flutter_bloc_template.staging
+      groups:
+        - staging_config
+      vars:
+        APP_STORE_APPLE_ID: "REPLACE_WITH_STAGING_APPLE_ID"
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: develop
+          include: true
+          source: true
+    scripts:
+      - name: Bootstrap
+        script: |
+          dart pub global activate melos
+          export PATH="$PATH:$HOME/.pub-cache/bin"
+          melos bootstrap
+      - name: Analyze
+        script: |
+          export PATH="$PATH:$HOME/.pub-cache/bin"
+          melos run analyze
+      - name: Test
+        script: |
+          export PATH="$PATH:$HOME/.pub-cache/bin"
+          melos run test
+      - name: Create flavor config from variable group
+        script: |
+          printf '%s' "$APP_CONFIG_JSON" > apps/app/config/staging.json
+      - name: Set up code signing
+        script: |
+          xcode-project use-profiles \
+            --custom-export-options='{"testFlightInternalTestingOnly": true}'
+      - name: Install pods
+        working_directory: apps/app/ios
+        script: pod install
+      - name: Build IPA
+        working_directory: apps/app
+        script: |
+          BUILD_NUMBER=$(($(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID") + 1))
+          flutter build ipa --release --flavor staging \
+            -t lib/main_staging.dart \
+            --dart-define-from-file=config/staging.json \
+            --build-number=$BUILD_NUMBER \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - apps/app/build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: false
+
+  android-prod:
+    name: Android prod (Google Play)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      flutter: fvm
+      android_signing:
+        - prod_keystore
+      groups:
+        - prod_config
+        - google_play
+      vars:
+        PACKAGE_NAME: "dev.invoketech.flutter_bloc_template"
+        GOOGLE_PLAY_TRACK: production
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: "v*"
+          include: true
+    scripts:
+      - name: Bootstrap
+        script: |
+          dart pub global activate melos
+          export PATH="$PATH:$HOME/.pub-cache/bin"
+          melos bootstrap
+      - name: Analyze
+        script: |
+          export PATH="$PATH:$HOME/.pub-cache/bin"
+          melos run analyze
+      - name: Test
+        script: |
+          export PATH="$PATH:$HOME/.pub-cache/bin"
+          melos run test
+      - name: Create flavor config from variable group
+        script: |
+          printf '%s' "$APP_CONFIG_JSON" > apps/app/config/prod.json
+      - name: Build AAB
+        working_directory: apps/app
+        script: |
+          BUILD_NUMBER=$(($(google-play get-latest-build-number --package-name "$PACKAGE_NAME" --tracks="$GOOGLE_PLAY_TRACK") + 1))
+          flutter build appbundle --release --flavor prod \
+            -t lib/main_prod.dart \
+            --dart-define-from-file=config/prod.json \
+            --build-number=$BUILD_NUMBER
+    artifacts:
+      - apps/app/build/**/outputs/**/*.aab
+      - apps/app/build/**/outputs/**/mapping.txt
+    publishing:
+      google_play:
+        credentials: $GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS
+        track: production
+        submit_as_draft: true
+
+  ios-prod:
+    name: iOS prod (App Store Connect)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: codemagic
+    environment:
+      flutter: fvm
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: dev.invoketech.flutter_bloc_template
+      groups:
+        - prod_config
+      vars:
+        APP_STORE_APPLE_ID: "REPLACE_WITH_PROD_APPLE_ID"
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: "v*"
+          include: true
+    scripts:
+      - name: Bootstrap
+        script: |
+          dart pub global activate melos
+          export PATH="$PATH:$HOME/.pub-cache/bin"
+          melos bootstrap
+      - name: Analyze
+        script: |
+          export PATH="$PATH:$HOME/.pub-cache/bin"
+          melos run analyze
+      - name: Test
+        script: |
+          export PATH="$PATH:$HOME/.pub-cache/bin"
+          melos run test
+      - name: Create flavor config from variable group
+        script: |
+          printf '%s' "$APP_CONFIG_JSON" > apps/app/config/prod.json
+      - name: Set up code signing
+        script: |
+          xcode-project use-profiles
+      - name: Install pods
+        working_directory: apps/app/ios
+        script: pod install
+      - name: Build IPA
+        working_directory: apps/app
+        script: |
+          BUILD_NUMBER=$(($(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID") + 1))
+          flutter build ipa --release --flavor prod \
+            -t lib/main_prod.dart \
+            --dart-define-from-file=config/prod.json \
+            --build-number=$BUILD_NUMBER \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - apps/app/build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: false
+        submit_to_app_store: false
