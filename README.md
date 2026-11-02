@@ -1,16 +1,15 @@
-# flutter_bloc_template
+# Flutter BLoC Template
 
-Flutter BloC Template
+Melos 7 pub workspace (`apps/app`). Flutter version is pinned in `.fvmrc`.
 
-## Getting Started
+```sh
+dart pub global activate melos
+melos bootstrap
+melos analyze
+melos test
+melos run coverage:check   # tests + 90% merged-lcov gate
+cd apps/app && flutter run -t lib/main_dev.dart
+```
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Coverage exclusions (`tool/coverage_check.dart`): `*.g.dart`, generated l10n,
+`main_*.dart`, `injection.dart`.
