@@ -8,8 +8,26 @@ melos bootstrap
 melos analyze
 melos test
 melos run coverage:check   # tests + 90% merged-lcov gate
-cd apps/app && flutter run -t lib/main_dev.dart
 ```
+
+## Flavors
+
+`dev`, `staging`, `prod` (flutter_flavorizr config lives in `apps/app/pubspec.yaml`;
+generated native config is committed). Each has its own app name, bundle/application
+ID suffix (`.dev`, `.staging`, none for prod) and icon (dev/staging carry a banner).
+Run from `apps/app` (copy `config/<flavor>.example.json` to `config/<flavor>.json` first):
+
+```sh
+flutter run --flavor dev -t lib/main_dev.dart --dart-define-from-file=config/dev.json
+flutter run --flavor staging -t lib/main_staging.dart --dart-define-from-file=config/staging.json
+flutter run --flavor prod -t lib/main_prod.dart --dart-define-from-file=config/prod.json
+
+flutter build apk --flavor prod -t lib/main_prod.dart --dart-define-from-file=config/prod.json
+flutter build ipa --flavor prod -t lib/main_prod.dart --dart-define-from-file=config/prod.json
+```
+
+All entrypoints call `bootstrap()` (`lib/bootstrap.dart`). To regenerate native config
+after editing the `flavorizr:` block: `dart run flutter_flavorizr -f` (in `apps/app`).
 
 Coverage exclusions (`tool/coverage_check.dart`): `*.g.dart`, generated l10n,
 `main_*.dart`, `injection.dart`.
