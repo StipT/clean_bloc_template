@@ -2,6 +2,7 @@ import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_template/features/posts/presentation/posts_bloc.dart';
+import 'package:l10n/l10n.dart';
 
 /// Provides the bloc via the composition root's factory and loads posts.
 class PostsPage extends StatelessWidget {
@@ -23,17 +24,19 @@ class PostsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final state = context.watch<PostsBloc>().state;
     return Scaffold(
-      appBar: AppBar(title: const Text('Posts')),
+      appBar: AppBar(title: Text(l10n.postsTitle)),
       body: switch (state.status) {
         PostsStatus.initial || PostsStatus.loading => const AppLoader(),
         PostsStatus.failure => ErrorView(
-          message: state.errorMessage ?? 'Something went wrong',
+          message: state.errorMessage ?? l10n.errorGeneric,
+          retryLabel: l10n.retryLabel,
           onRetry: () => context.read<PostsBloc>().add(const PostsRequested()),
         ),
-        PostsStatus.loaded when state.posts.isEmpty => const EmptyView(
-          message: 'No posts yet',
+        PostsStatus.loaded when state.posts.isEmpty => EmptyView(
+          message: l10n.postsEmpty,
         ),
         PostsStatus.loaded => ListView.separated(
           itemCount: state.posts.length,

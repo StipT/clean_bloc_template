@@ -11,10 +11,8 @@ workflows:
         - staging_keystore
       groups:
         - staging_config
-        - google_play
         - firebase
       vars:
-        PACKAGE_NAME: "dev.invoketech.flutter_bloc_template.staging"
         FIREBASE_ANDROID_APP_ID: "REPLACE_WITH_FIREBASE_APP_ID"
     triggering:
       events:
@@ -43,10 +41,9 @@ workflows:
       - name: Build AAB
         working_directory: apps/app
         script: |
-          # Latest Play build + 1; falls back to the Codemagic build number
-          # while the staging package is not on Google Play.
-          LATEST=$(google-play get-latest-build-number --package-name "$PACKAGE_NAME" 2>/dev/null || echo 0)
-          BUILD_NUMBER=$(( LATEST > 0 ? LATEST + 1 : PROJECT_BUILD_NUMBER ))
+          # Codemagic's per-app build counter is monotonic; Firebase App
+          # Distribution does not require Google Play.
+          BUILD_NUMBER=$PROJECT_BUILD_NUMBER
           flutter build appbundle --release --flavor staging \
             -t lib/main_staging.dart \
             --dart-define-from-file=config/staging.json \

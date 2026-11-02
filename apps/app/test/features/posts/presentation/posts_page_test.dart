@@ -6,6 +6,7 @@ import 'package:flutter_bloc_template/features/posts/domain/post.dart';
 import 'package:flutter_bloc_template/features/posts/presentation/posts_bloc.dart';
 import 'package:flutter_bloc_template/features/posts/presentation/posts_page.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:l10n/l10n.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _MockPostsBloc extends MockBloc<PostsEvent, PostsState>
@@ -16,10 +17,17 @@ void main() {
 
   setUp(() => bloc = _MockPostsBloc());
 
-  Future<void> pump(WidgetTester tester, PostsState state) async {
+  Future<void> pump(
+    WidgetTester tester,
+    PostsState state, {
+    Locale locale = const Locale('en'),
+  }) async {
     when(() => bloc.state).thenReturn(state);
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: locale,
         home: BlocProvider<PostsBloc>.value(
           value: bloc,
           child: const PostsView(),
@@ -53,6 +61,26 @@ void main() {
   testWidgets('shows empty view', (tester) async {
     await pump(tester, const PostsState(status: PostsStatus.loaded));
     expect(find.byType(EmptyView), findsOneWidget);
+    expect(find.text('No posts yet'), findsOneWidget);
+    expect(find.text('Posts'), findsOneWidget);
+  });
+
+  testWidgets('localizes title and empty message to Croatian', (tester) async {
+    await pump(
+      tester,
+      const PostsState(status: PostsStatus.loaded),
+      locale: const Locale('hr'),
+    );
+    expect(find.text('Objave'), findsOneWidget);
+    expect(find.text('Još nema objava'), findsOneWidget);
+  });
+
+  testWidgets('falls back to localized error message and retry label', (
+    tester,
+  ) async {
+    await pump(tester, const PostsState(status: PostsStatus.failure));
+    expect(find.text('Something went wrong'), findsOneWidget);
+    expect(find.text('Retry'), findsOneWidget);
   });
 
   testWidgets('shows error and retries', (tester) async {

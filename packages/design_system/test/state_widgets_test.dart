@@ -32,7 +32,9 @@ void main() {
   });
 
   testWidgets('ErrorView hides retry without callback', (tester) async {
-    await tester.pumpWidget(wrap(const ErrorView(message: 'Boom')));
+    await tester.pumpWidget(
+      wrap(const ErrorView(message: 'Boom', retryLabel: 'Retry')),
+    );
     expect(find.byType(AppButton), findsNothing);
   });
 

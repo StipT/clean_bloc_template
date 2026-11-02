@@ -151,6 +151,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark'**
   String get themeDark;
+
+  /// No description provided for @postsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Posts'**
+  String get postsTitle;
+
+  /// No description provided for @postsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No posts yet'**
+  String get postsEmpty;
+
+  /// No description provided for @errorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong'**
+  String get errorGeneric;
+
+  /// No description provided for @retryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retryLabel;
+
+  /// No description provided for @appTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Flutter BLoC Template'**
+  String get appTitle;
 }
 
 class _AppLocalizationsDelegate
