@@ -10,6 +10,7 @@ workspace:
   - packages/network
   - packages/navigation
   - packages/design_system
+  - packages/l10n
 
 dev_dependencies:
   melos: ^7.0.0
