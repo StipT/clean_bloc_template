@@ -46,8 +46,9 @@ class SettingsPage extends StatelessWidget {
           RadioGroup<ThemeMode>(
             groupValue: themeMode,
             onChanged: (mode) {
-              if (mode != null)
+              if (mode != null) {
                 unawaited(context.read<ThemeCubit>().setThemeMode(mode));
+              }
             },
             child: Column(
               children: [
