@@ -6,5 +6,5 @@ import 'package:get_it/get_it.dart';
 
 void main() {
   configureDependencies(GetIt.instance, AppConfig.fromEnvironment());
-  runApp(const App());
+  runApp(App(getIt: GetIt.instance));
 }
