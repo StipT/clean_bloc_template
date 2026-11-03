@@ -53,18 +53,17 @@ class ApiClient {
     Map<String, String>? query,
     Object? body,
   }) async {
-    final segment = path.startsWith('/') ? path : '/$path';
-    final uri = Uri.parse('$_baseUrl$segment').replace(queryParameters: query);
-    final request = http.Request(method, uri)
-      ..headers['Accept'] = 'application/json';
-    if (body != null) {
-      request
-        ..headers['Content-Type'] = 'application/json'
-        ..body = jsonEncode(body);
-    }
-
     final http.Response response;
     try {
+      final segment = path.startsWith('/') ? path : '/$path';
+      final uri = Uri.parse('$_baseUrl$segment').replace(queryParameters: query);
+      final request = http.Request(method, uri)
+        ..headers['Accept'] = 'application/json';
+      if (body != null) {
+        request
+          ..headers['Content-Type'] = 'application/json'
+          ..body = jsonEncode(body);
+      }
       response = await http.Response.fromStream(
         await _client.send(request).timeout(timeout),
       ).timeout(timeout);
