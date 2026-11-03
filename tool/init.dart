@@ -34,9 +34,15 @@ Future<void> main(List<String> args) async {
       _die('Unknown or incomplete argument: $a');
     }
   }
-  final name = opts['--name'];
-  final package = opts['--package'];
-  final bundle = opts['--bundle-id'];
+  var name = opts['--name'];
+  var package = opts['--package'];
+  var bundle = opts['--bundle-id'];
+  if ((name == null || package == null || bundle == null) &&
+      stdin.hasTerminal) {
+    name ??= _ask('App name', 'My App');
+    package ??= _ask('Dart package name', _snake(name));
+    bundle ??= _ask('Bundle / application ID', 'com.example.$package');
+  }
   if (name == null ||
       name.trim().isEmpty ||
       package == null ||
@@ -84,12 +90,14 @@ Future<void> main(List<String> args) async {
   if (moved != null)
     stdout.writeln('${dryRun ? 'Would move' : 'Moved'} $moved');
 
-  if (dryRun || flags.contains('--skip-repo-setup')) {
-    stdout.writeln(
-      dryRun
-          ? 'Dry run: nothing written, tool/setup_repo.sh not run.'
-          : 'Skipped tool/setup_repo.sh.',
-    );
+  if (dryRun) {
+    stdout.writeln('Dry run: nothing written, tool/setup_repo.sh not run.');
+    return;
+  }
+  _copyExampleConfigs(root);
+  if (flags.contains('--skip-repo-setup')) {
+    stdout.writeln('Skipped tool/setup_repo.sh.');
+    _printNextSteps();
     return;
   }
   final repo = opts['--repo'];
@@ -104,6 +112,45 @@ Future<void> main(List<String> args) async {
       'renamed; re-run it manually or use --skip-repo-setup.',
     );
   }
+  _printNextSteps();
+}
+
+String _ask(String label, String fallback) {
+  stdout.write('$label [$fallback]: ');
+  final line = stdin.readLineSync()?.trim() ?? '';
+  return line.isEmpty ? fallback : line;
+}
+
+String _snake(String s) => s
+    .trim()
+    .toLowerCase()
+    .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+    .replaceAll(RegExp(r'^_+|_+$'), '');
+
+void _copyExampleConfigs(String root) {
+  final dir = Directory('$root/apps/app/config');
+  if (!dir.existsSync()) return;
+  for (final f in dir.listSync().whereType<File>()) {
+    if (!f.path.endsWith('.example.json')) continue;
+    final target = File(f.path.replaceFirst('.example.json', '.json'));
+    if (!target.existsSync()) {
+      f.copySync(target.path);
+      stdout.writeln('Created ${target.path.replaceFirst('$root/', '')}');
+    }
+  }
+}
+
+void _printNextSteps() {
+  stdout.writeln('''
+
+Done. Next steps:
+  1. dart pub global activate melos && melos bootstrap
+  2. Edit apps/app/config/<flavor>.json (base URL, flags; no secrets)
+  3. cd apps/app && flutter run --flavor dev -t lib/main_dev.dart \\
+       --dart-define-from-file=config/dev.json
+  4. Set up Codemagic (README, "Codemagic") and replace the placeholders in codemagic.yaml
+  5. Delete the demo feature if you don't need it (README, "Removing the demo feature")
+  6. rm -r tool/init tool/init.dart tool/test/init_test.sh''');
 }
 
 Never _die(String msg) {

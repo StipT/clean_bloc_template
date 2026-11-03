@@ -6,6 +6,23 @@ Croatian), `go_router` navigation, a small design system, an `http`-based networ
 layer, `dev`/`staging`/`prod` flavors, typed env config and CI/CD (GitHub Actions +
 Codemagic). A `posts` demo feature shows the full pattern end to end.
 
+## Quick start (new project)
+
+```bash
+gh repo create acme/shop --template StipT/clean_bloc_template --private --clone
+cd shop
+tool/init                      # prompts for name, package and bundle ID
+dart pub global activate melos && melos bootstrap
+cd apps/app && flutter run --flavor dev -t lib/main_dev.dart \
+  --dart-define-from-file=config/dev.json
+```
+
+`tool/init` renames everything, creates `config/<flavor>.json` from the examples,
+optionally creates the branch ruleset (`tool/setup_repo.sh`) and prints the remaining
+steps. Prerequisites: Flutter (see `.fvmrc`), `gh` (authenticated), and `dart`.
+Then see [Codemagic](#codemagic-cd) for store releases. Skip the ruleset with
+`--skip-repo-setup`; preview with `--dry-run`.
+
 Flutter is pinned in `.fvmrc`, the single source of truth for GitHub Actions and Codemagic.
 Design decisions are recorded in [`docs/adr`](docs/adr); see also [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -46,8 +63,8 @@ docs/adr/               architecture decision records
 
 ## Use this template
 
-1. Click **Use this template** on GitHub (or `gh repo create <name> --template StipT/clean_bloc_template`) and clone your new repo.
-2. Run `tool/init` (below) to rename the app, package and bundle IDs.
+1. Click **Use this template** on GitHub (or use the Quick start above) and clone your new repo.
+2. Run `tool/init` (below); it prompts for anything you omit when run in a terminal.
 3. Run `melos bootstrap`.
 
 ### Initialising a new app
