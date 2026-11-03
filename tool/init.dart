@@ -7,6 +7,7 @@ const _oldPackage = 'flutter_bloc_template';
 const _oldBundle = 'dev.invoketech.flutter_bloc_template';
 const _oldBundleCamel = 'dev.invoketech.flutterBlocTemplate';
 const _oldTitle = 'Flutter BLoC Template';
+const _oldTitleHr = 'Flutter BLoC predložak';
 const _oldName = 'Template';
 
 const _usage = '''
@@ -50,7 +51,7 @@ Future<void> main(List<String> args) async {
       'e.g. com.acme.app.',
     );
   }
-  if (name.contains(RegExp(r'["\\$&]'))) {
+  if (name.contains(RegExp(r"""["'\\$&]"""))) {
     _die('--name must not contain quotes, backslashes, \$ or &.');
   }
   final displayName = name.trim();
@@ -127,6 +128,7 @@ String _transform(
       .replaceAll('package:$_oldPackage/', 'package:$package/')
       .replaceAll('${_oldPackage}_workspace', '${package}_workspace')
       .replaceAll(_oldTitle, name);
+  out = out.replaceAll(_oldTitleHr, name);
   if (path.endsWith('/pubspec.yaml') || path == 'pubspec.yaml') {
     out = out.replaceFirst(
       RegExp('^name: $_oldPackage\$', multiLine: true),

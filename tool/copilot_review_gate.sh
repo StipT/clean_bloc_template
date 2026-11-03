@@ -16,6 +16,7 @@ count_unresolved() {
   jq '[.data.repository.pullRequest.reviewThreads.nodes[]
        | select(.isResolved == false)
        | select(.comments.nodes[0].author.login == "copilot-pull-request-reviewer")
+       | select(.comments.nodes[0].author.__typename == "Bot")
       ] | length' "$1"
 }
 
@@ -34,8 +35,12 @@ review_state() {
 
 # Reads one GraphQL reviewThreads page; prints "<hasNextPage> <endCursor>".
 page_info() {
-  jq -r '.data.repository.pullRequest.reviewThreads.pageInfo
-         | "\(.hasNextPage) \(.endCursor // "")"' "$1"
+  jq -er '
+    .data.repository.pullRequest.reviewThreads.pageInfo as $page
+    | if ($page.hasNextPage | type) != "boolean" then error("invalid hasNextPage")
+      elif $page.hasNextPage and (($page.endCursor // "") == "") then
+        error("missing endCursor")
+      else "\($page.hasNextPage) \($page.endCursor // "")" end' "$1"
 }
 
 fetch_state() {
@@ -61,21 +66,33 @@ count_all_unresolved() {
   while :; do
     local cursor_args=()
     [ -z "$cursor" ] || cursor_args=(-f "cursor=$cursor")
-    gh api graphql -F owner="$owner" -F name="$name" -F pr="$pr" \
+    if ! gh api graphql -F owner="$owner" -F name="$name" -F pr="$pr" \
       ${cursor_args[@]+"${cursor_args[@]}"} -f query='
       query($owner:String!,$name:String!,$pr:Int!,$cursor:String){
         repository(owner:$owner,name:$name){
           pullRequest(number:$pr){
             reviewThreads(first:100, after:$cursor){
               pageInfo{ hasNextPage endCursor }
-              nodes{ isResolved comments(first:1){ nodes{ author{ login } } } }
+              nodes{ isResolved comments(first:1){ nodes{ author{ login __typename } } } }
             }
           }
         }
-      }' >"$page"
-    c="$(count_unresolved "$page")"
+      }' >"$page"; then
+      rm -f "$page"
+      echo "::error::Failed to fetch Copilot review threads" >&2
+      return 1
+    fi
+    if ! c="$(count_unresolved "$page")" || [[ ! "$c" =~ ^[0-9]+$ ]]; then
+      rm -f "$page"
+      echo "::error::Failed to parse Copilot review threads" >&2
+      return 1
+    fi
     total=$((total + c))
-    info="$(page_info "$page")"
+    if ! info="$(page_info "$page")"; then
+      rm -f "$page"
+      echo "::error::Failed to parse Copilot review thread pagination" >&2
+      return 1
+    fi
     has="${info%% *}"
     [ "$has" = "true" ] || break
     cursor="${info#* }"
@@ -85,7 +102,7 @@ count_all_unresolved() {
 }
 
 run() {
-  local repo="$1" pr="$2" owner name n=0 head state
+  local repo="$1" pr="$2" owner name n=0 head state unresolved
   owner="${repo%/*}"
   name="${repo#*/}"
   head="$(gh api "repos/$repo/pulls/$pr" --jq .head.sha)"
@@ -95,24 +112,39 @@ run() {
     request_review "$repo" "$pr"
   fi
 
-  until [ "$state" = "current" ]; do
-    n=$((n + 1))
-    if [ "$n" -gt "$POLL_ATTEMPTS" ]; then
-      echo "::error::Timed out waiting for a Copilot review of $head"
-      return 1
+  while [ "$n" -lt "$POLL_ATTEMPTS" ]; do
+    if [ "$state" = "current" ]; then
+      if ! unresolved="$(count_all_unresolved "$owner" "$name" "$pr")"; then
+        echo "::error::Could not determine unresolved Copilot review threads"
+        return 1
+      fi
+      if [[ ! "$unresolved" =~ ^[0-9]+$ ]]; then
+        echo "::error::Invalid unresolved Copilot review thread count"
+        return 1
+      fi
+      if [ "$unresolved" -eq 0 ]; then
+        echo "Copilot review gate passed"
+        return 0
+      fi
+      echo "Waiting for $unresolved unresolved Copilot review thread(s)"
+    else
+      echo "Waiting for Copilot review of $head"
     fi
-    echo "Waiting for Copilot review of $head ($n/$POLL_ATTEMPTS)"
+    n=$((n + 1))
+    [ "$n" -lt "$POLL_ATTEMPTS" ] || break
     sleep "$POLL_INTERVAL"
-    state="$(fetch_state "$repo" "$pr" "$head")"
+    if [ "$state" != "current" ]; then
+      state="$(fetch_state "$repo" "$pr" "$head")"
+    fi
   done
 
-  local unresolved
-  unresolved="$(count_all_unresolved "$owner" "$name" "$pr")"
-  if [ "$unresolved" -gt 0 ]; then
-    echo "::error::$unresolved unresolved Copilot review thread(s)"
+  if [ "$state" != "current" ]; then
+    echo "::error::Timed out waiting for a Copilot review of $head"
+  else
+    echo "::error::Timed out waiting for $unresolved unresolved Copilot review thread(s)"
     return 1
   fi
-  echo "Copilot review gate passed"
+  return 1
 }
 
 case "${1:-}" in

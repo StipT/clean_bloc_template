@@ -39,6 +39,8 @@ ok "no leftover template names"
 grep -q '^name: acme_shop$' "$d/apps/app/pubspec.yaml" || fail "pubspec name"
 grep -q '^name: acme_shop_workspace$' "$d/pubspec.yaml" || fail "workspace name"
 grep -rq 'package:acme_shop/' "$d/apps/app/lib" || fail "imports"
+grep -q '"appTitle": "Acme Shop"' "$d/packages/l10n/lib/src/l10n/app_hr.arb" || fail "Croatian app title"
+grep -q "String get appTitle => 'Acme Shop';" "$d/packages/l10n/lib/src/generated/app_localizations_hr.dart" || fail "generated Croatian app title"
 ok "package rename"
 # directives_ordering lint: package imports must stay alphabetical
 while IFS= read -r f; do
@@ -84,6 +86,9 @@ if (cd "$d" && tool/init --name X --package ok_name --bundle-id nodots --skip-re
 fi
 if (cd "$d" && tool/init --name "Shop: Mobile" --package ok_name --bundle-id com.acme.shop --skip-repo-setup >/dev/null 2>&1); then
   fail "YAML-unsafe display name accepted"
+fi
+if (cd "$d" && tool/init --name "Bob's Shop" --package ok_name --bundle-id com.acme.shop --skip-repo-setup >/dev/null 2>&1); then
+  fail "Dart-unsafe apostrophe accepted"
 fi
 [ -z "$(cd "$d" && git status --porcelain)" ] || fail "invalid input modified files"
 ok "validation"

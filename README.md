@@ -123,12 +123,11 @@ Tooling tests: `tool/test/init_test.sh`, `tool/test/copilot_review_gate_test.sh`
 ### Copilot review gate and ruleset
 
 `.github/workflows/copilot-review-gate.yml` requests a Copilot review if none
-exists, polls up to ~10 min, and fails while Copilot has unresolved review
-threads (resolve them to pass). Resolving a thread does not trigger a workflow,
-so after resolving all threads, manually rerun **Copilot review gate** from
-Actions with the PR number. Copilot code review must be enabled for the repo/org;
-expect some noisy comments. Layering rules for Copilot live in
-`.github/copilot-instructions.md`.
+exists and polls up to ~10 min for a current review and for all Copilot review
+threads to be resolved. If it times out, resolve the threads and manually rerun
+**Copilot review gate** from Actions with the PR number. Copilot code review
+must be enabled for the repo/org; expect some noisy comments. See
+`.github/copilot-instructions.md` for layering rules.
 
 Run `tool/setup_repo.sh [owner/repo]` (needs `gh` with admin rights; safe to
 re-run; `--dry-run` prints the ruleset) to create the `main-protection` ruleset.
