@@ -56,7 +56,9 @@ class ApiClient {
     final http.Response response;
     try {
       final segment = path.startsWith('/') ? path : '/$path';
-      final uri = Uri.parse('$_baseUrl$segment').replace(queryParameters: query);
+      final uri = Uri.parse('$_baseUrl$segment').replace(
+        queryParameters: query,
+      );
       final request = http.Request(method, uri)
         ..headers['Accept'] = 'application/json';
       if (body != null) {
