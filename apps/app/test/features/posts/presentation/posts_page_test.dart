@@ -8,6 +8,7 @@ import 'package:flutter_bloc_template/features/posts/presentation/posts_page.dar
 import 'package:flutter_test/flutter_test.dart';
 import 'package:l10n/l10n.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:navigation/navigation.dart';
 
 class _MockPostsBloc extends MockBloc<PostsEvent, PostsState>
     implements PostsBloc {}
@@ -93,5 +94,30 @@ void main() {
     await tester.tap(find.byType(AppButton));
 
     verify(() => bloc.add(const PostsRequested())).called(1);
+  });
+
+  testWidgets('settings action opens the settings route', (tester) async {
+    const state = PostsState(status: PostsStatus.loaded);
+    when(() => bloc.state).thenReturn(state);
+    await tester.pumpWidget(
+      MaterialApp.router(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('hr'),
+        routerConfig: createAppRouter(
+          postsBuilder: (_) => BlocProvider<PostsBloc>.value(
+            value: bloc,
+            child: const PostsView(),
+          ),
+          settingsBuilder: (_) => const Scaffold(body: Text('settings page')),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byTooltip('Postavke'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('settings page'), findsOneWidget);
+    expect(find.byType(PostsView), findsNothing);
   });
 }
