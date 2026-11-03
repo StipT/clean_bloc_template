@@ -44,7 +44,7 @@ Future<void> main(List<String> args) async {
   if (!RegExp(r'^[a-z][a-z0-9_]*$').hasMatch(package)) {
     _die('Invalid --package "$package": use lowercase letters, digits, _.');
   }
-  if (!RegExp(r'^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$').hasMatch(bundle)) {
+  if (!RegExp(r'^[a-z][a-z0-9]*(\.[a-z][a-z0-9]*)+$').hasMatch(bundle)) {
     _die(
       'Invalid --bundle-id "$bundle": use dotted lowercase segments, '
       'e.g. com.acme.app.',
