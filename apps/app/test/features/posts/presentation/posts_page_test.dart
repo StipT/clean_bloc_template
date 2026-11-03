@@ -89,7 +89,7 @@ void main() {
       tester,
       const PostsState(status: PostsStatus.failure, errorMessage: 'boom'),
     );
-    expect(find.text('boom'), findsOneWidget);
+    expect(find.text('Something went wrong'), findsOneWidget);
 
     await tester.tap(find.byType(AppButton));
 
