@@ -53,6 +53,14 @@ Future<void> main(List<String> args) async {
   if (name.contains(RegExp(r'["\\$&]'))) {
     _die('--name must not contain quotes, backslashes, \$ or &.');
   }
+  final displayName = name.trim();
+  if (displayName.contains(RegExp(r'[:#\r\n\t]')) ||
+      RegExp(r"""^[-?:,\[\]{}&*!|>'"%@`]""").hasMatch(displayName)) {
+    _die(
+      '--name contains characters that are unsafe in generated YAML; '
+      'use a name without YAML-reserved characters.',
+    );
+  }
 
   final dryRun = flags.contains('--dry-run');
   final root = Directory.fromUri(
@@ -60,7 +68,7 @@ Future<void> main(List<String> args) async {
   ).resolveSymbolicLinksSync();
   final changed = rewriteFiles(
     root: root,
-    name: name.trim(),
+    name: displayName,
     package: package,
     bundle: bundle,
     dryRun: dryRun,

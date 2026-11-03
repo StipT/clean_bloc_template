@@ -58,6 +58,7 @@ tool/init --name "Acme Shop" --package acme_shop --bundle-id com.acme.shop \
 ```
 
 - `--name`: display name (flavors become `Acme Shop Dev` / `Acme Shop Staging`).
+  YAML-reserved characters (such as `:` and `#`) are rejected.
 - `--package`: Dart package name (`snake_case`); rewrites pubspecs and all package imports.
 - `--bundle-id`: base application/bundle ID; flavors get `.dev` / `.staging`.
   Updates Android `applicationId`/`namespace`/Kotlin package dirs, iOS bundle IDs,
@@ -123,8 +124,10 @@ Tooling tests: `tool/test/init_test.sh`, `tool/test/copilot_review_gate_test.sh`
 
 `.github/workflows/copilot-review-gate.yml` requests a Copilot review if none
 exists, polls up to ~10 min, and fails while Copilot has unresolved review
-threads (resolve them to pass). Copilot code review must be enabled for the
-repo/org; expect some noisy comments. Layering rules for Copilot live in
+threads (resolve them to pass). Resolving a thread does not trigger a workflow,
+so after resolving all threads, manually rerun **Copilot review gate** from
+Actions with the PR number. Copilot code review must be enabled for the repo/org;
+expect some noisy comments. Layering rules for Copilot live in
 `.github/copilot-instructions.md`.
 
 Run `tool/setup_repo.sh [owner/repo]` (needs `gh` with admin rights; safe to

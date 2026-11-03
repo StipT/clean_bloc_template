@@ -23,8 +23,8 @@ count_unresolved() {
 # "current" if the latest Copilot review is for that commit, "stale" if the
 # latest Copilot review is for an older commit, "none" if there is no review.
 review_state() {
-  jq -r --arg head "$2" '
-    [.[] | select((.user.login // "") | startswith("copilot"))
+  jq -r --arg head "$2" --arg reviewer "$COPILOT_REVIEWER" '
+    [.[] | select(.user.login == $reviewer and .user.type == "Bot")
          | select(.submitted_at != null)]
     | sort_by(.submitted_at) | last
     | if . == null then "none"

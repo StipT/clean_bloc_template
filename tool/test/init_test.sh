@@ -75,12 +75,16 @@ ok "calls setup_repo.sh"
 
 # validation
 d="$work/bad"; fresh_copy "$d"
+(cd "$d" && git init -q && git add -A >/dev/null 2>&1 && git -c user.name=t -c user.email=t@t commit -qm x)
 if (cd "$d" && tool/init --name X --package Bad-Name --bundle-id com.acme.shop --skip-repo-setup >/dev/null 2>&1); then
   fail "invalid package accepted"
 fi
 if (cd "$d" && tool/init --name X --package ok_name --bundle-id nodots --skip-repo-setup >/dev/null 2>&1); then
   fail "invalid bundle id accepted"
 fi
-[ -z "$(cd "$d" && grep -rl acme apps 2>/dev/null)" ] || fail "invalid input modified files"
+if (cd "$d" && tool/init --name "Shop: Mobile" --package ok_name --bundle-id com.acme.shop --skip-repo-setup >/dev/null 2>&1); then
+  fail "YAML-unsafe display name accepted"
+fi
+[ -z "$(cd "$d" && git status --porcelain)" ] || fail "invalid input modified files"
 ok "validation"
 echo "all init tests passed"

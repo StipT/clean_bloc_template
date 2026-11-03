@@ -23,8 +23,8 @@ wrap "$(thread true copilot-pull-request-reviewer)"; expect 0 "resolved copilot"
 wrap "$(thread false someone)"; expect 0 "unresolved human ignored"
 wrap "$(thread false copilot-pull-request-reviewer),$(thread false copilot-pull-request-reviewer),$(thread true copilot-pull-request-reviewer)"; expect 2 "mixed"
 
-review() { # login commit submitted_at
-  printf '{"user":{"login":"%s"},"commit_id":"%s","submitted_at":"%s"}' "$1" "$2" "$3"
+review() { # login type commit submitted_at
+  printf '{"user":{"login":"%s","type":"%s"},"commit_id":"%s","submitted_at":"%s"}' "$1" "$2" "$3" "$4"
 }
 expect_state() { # expected name head
   local got
@@ -36,12 +36,16 @@ reviews() { printf '[%s]' "$1" >"$f"; }
 bot=copilot-pull-request-reviewer
 
 reviews ""; expect_state none "no reviews" aaa
-reviews "$(review someone aaa 2026-01-01T00:00:00Z)"; expect_state none "human review ignored" aaa
-reviews "$(review $bot aaa 2026-01-01T00:00:00Z)"; expect_state current "review of head" aaa
-reviews "$(review $bot old 2026-01-01T00:00:00Z)"; expect_state stale "review of older commit" aaa
-reviews "$(review $bot aaa 2026-01-01T00:00:00Z),$(review $bot bbb 2026-01-02T00:00:00Z)"
+reviews "$(review someone User aaa 2026-01-01T00:00:00Z)"; expect_state none "human review ignored" aaa
+reviews "$(review copilot-review-helper User aaa 2026-01-01T00:00:00Z)"
+expect_state none "similarly named human reviewer ignored" aaa
+reviews "$(review $bot User aaa 2026-01-01T00:00:00Z)"
+expect_state none "non-bot reviewer with exact login ignored" aaa
+reviews "$(review $bot Bot aaa 2026-01-01T00:00:00Z)"; expect_state current "review of head" aaa
+reviews "$(review $bot Bot old 2026-01-01T00:00:00Z)"; expect_state stale "review of older commit" aaa
+reviews "$(review $bot Bot aaa 2026-01-01T00:00:00Z),$(review $bot Bot bbb 2026-01-02T00:00:00Z)"
 expect_state stale "latest review is for older commit than head" aaa
-reviews "$(review $bot bbb 2026-01-02T00:00:00Z),$(review $bot aaa 2026-01-01T00:00:00Z)"
+reviews "$(review $bot Bot bbb 2026-01-02T00:00:00Z),$(review $bot Bot aaa 2026-01-01T00:00:00Z)"
 expect_state current "latest by time wins regardless of order" bbb
 
 page() { printf '{"data":{"repository":{"pullRequest":{"reviewThreads":{"pageInfo":{"hasNextPage":%s,"endCursor":%s},"nodes":[]}}}}}' "$1" "$2" >"$f"; }
