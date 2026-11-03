@@ -31,7 +31,7 @@ class PostsView extends StatelessWidget {
       body: switch (state.status) {
         PostsStatus.initial || PostsStatus.loading => const AppLoader(),
         PostsStatus.failure => ErrorView(
-          message: state.errorMessage ?? l10n.errorGeneric,
+          message: l10n.errorGeneric,
           retryLabel: l10n.retryLabel,
           onRetry: () => context.read<PostsBloc>().add(const PostsRequested()),
         ),
