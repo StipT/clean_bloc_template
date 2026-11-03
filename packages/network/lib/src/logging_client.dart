@@ -8,7 +8,8 @@ class LoggingClient extends http.BaseClient {
   final void Function(String) _log;
 
   static final _sensitiveQueryKey = RegExp(
-    r'token|key|secret|password|authorization|credential|auth|signature|jwt|session|code|sig',
+    'token|key|secret|password|authorization|credential|'
+        'auth|signature|jwt|session|code|sig',
     caseSensitive: false,
   );
 
