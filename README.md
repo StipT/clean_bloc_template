@@ -124,9 +124,9 @@ Tooling tests: `tool/test/init_test.sh`, `tool/test/copilot_review_gate_test.sh`
 
 `.github/workflows/copilot-review-gate.yml` requests a Copilot review if none
 exists and polls up to ~10 min for a current review and for all Copilot review
-threads to be resolved. If it times out, resolve the threads and manually rerun
-**Copilot review gate** from Actions with the PR number. Copilot code review
-must be enabled for the repo/org; expect some noisy comments. See
+threads to be resolved. If it times out, resolve the threads and rerun the
+failed job in the original pull-request workflow run from Actions. Copilot code
+review must be enabled for the repo/org; expect some noisy comments. See
 `.github/copilot-instructions.md` for layering rules.
 
 Run `tool/setup_repo.sh [owner/repo]` (needs `gh` with admin rights; safe to

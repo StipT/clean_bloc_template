@@ -7,6 +7,7 @@
 set -euo pipefail
 
 COPILOT_REVIEWER='copilot-pull-request-reviewer'
+COPILOT_REST_REVIEWER="${COPILOT_REVIEWER}[bot]"
 POLL_INTERVAL="${POLL_INTERVAL:-30}"
 POLL_ATTEMPTS="${POLL_ATTEMPTS:-20}" # ~10 min
 
@@ -24,7 +25,7 @@ count_unresolved() {
 # "current" if the latest Copilot review is for that commit, "stale" if the
 # latest Copilot review is for an older commit, "none" if there is no review.
 review_state() {
-  jq -r --arg head "$2" --arg reviewer "$COPILOT_REVIEWER" '
+  jq -r --arg head "$2" --arg reviewer "$COPILOT_REST_REVIEWER" '
     [.[] | select(.user.login == $reviewer and .user.type == "Bot")
          | select(.submitted_at != null)]
     | sort_by(.submitted_at) | last

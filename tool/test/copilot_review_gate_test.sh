@@ -36,6 +36,7 @@ expect_state() { # expected name head
 }
 reviews() { printf '[%s]' "$1" >"$f"; }
 bot=copilot-pull-request-reviewer
+rest_bot="${bot}[bot]"
 
 reviews ""; expect_state none "no reviews" aaa
 reviews "$(review someone User aaa 2026-01-01T00:00:00Z)"; expect_state none "human review ignored" aaa
@@ -43,12 +44,14 @@ reviews "$(review copilot-review-helper User aaa 2026-01-01T00:00:00Z)"
 expect_state none "similarly named human reviewer ignored" aaa
 reviews "$(review $bot User aaa 2026-01-01T00:00:00Z)"
 expect_state none "non-bot reviewer with exact login ignored" aaa
-reviews "$(review $bot Bot aaa 2026-01-01T00:00:00Z)"; expect_state current "review of head" aaa
-reviews "$(review $bot Bot old 2026-01-01T00:00:00Z)"; expect_state stale "review of older commit" aaa
-reviews "$(review $bot Bot aaa 2026-01-01T00:00:00Z),$(review $bot Bot bbb 2026-01-02T00:00:00Z)"
+reviews "$(review "$rest_bot" Bot aaa 2026-01-01T00:00:00Z)"; expect_state current "review of head" aaa
+reviews "$(review "$rest_bot" Bot old 2026-01-01T00:00:00Z)"; expect_state stale "review of older commit" aaa
+reviews "$(review "$rest_bot" Bot aaa 2026-01-01T00:00:00Z),$(review "$rest_bot" Bot bbb 2026-01-02T00:00:00Z)"
 expect_state stale "latest review is for older commit than head" aaa
-reviews "$(review $bot Bot bbb 2026-01-02T00:00:00Z),$(review $bot Bot aaa 2026-01-01T00:00:00Z)"
+reviews "$(review "$rest_bot" Bot bbb 2026-01-02T00:00:00Z),$(review "$rest_bot" Bot aaa 2026-01-01T00:00:00Z)"
 expect_state current "latest by time wins regardless of order" bbb
+reviews "$(review $bot Bot aaa 2026-01-01T00:00:00Z)"
+expect_state none "GraphQL login is not a REST review login" aaa
 
 page() { printf '{"data":{"repository":{"pullRequest":{"reviewThreads":{"pageInfo":{"hasNextPage":%s,"endCursor":%s},"nodes":[]}}}}}' "$1" "$2" >"$f"; }
 page_expect() {
@@ -68,7 +71,7 @@ cat >"$bin/gh" <<'EOF'
 if [[ "$*" == "api repos/o/r/pulls/1 --jq .head.sha" ]]; then
   echo head
 elif [[ "$*" == "api repos/o/r/pulls/1/reviews --paginate" ]]; then
-  echo '[{"user":{"login":"copilot-pull-request-reviewer","type":"Bot"},"commit_id":"head","submitted_at":"2026-01-01T00:00:00Z"}]'
+  echo '[{"user":{"login":"copilot-pull-request-reviewer[bot]","type":"Bot"},"commit_id":"head","submitted_at":"2026-01-01T00:00:00Z"}]'
 elif [[ "$*" == *"api graphql"* ]]; then
   case "$GH_MOCK_MODE" in
     fail) exit 1 ;;

@@ -149,9 +149,28 @@ void main() {
         MockClient((_) async => http.Response('', 201)),
         log: logs.add,
       );
-      await client.get(Uri.parse('https://a.test/p'));
+      await client.get(
+        Uri(
+          scheme: 'https',
+          userInfo: 'myuser:super-secret-password',
+          host: 'a.test',
+          path: '/p',
+          queryParameters: {
+            'access_token': 'query-secret',
+            'apiKey': 'key-secret',
+            'keep': 'value',
+          },
+        ),
+      );
       client.close();
-      expect(logs, ['--> GET https://a.test/p', '<-- 201 https://a.test/p']);
+      expect(logs, hasLength(2));
+      expect(logs.first, contains('REDACTED@a.test/p'));
+      expect(logs.first, contains('keep=value'));
+      final joinedLogs = logs.join();
+      expect(joinedLogs, isNot(contains('myuser')));
+      expect(joinedLogs, isNot(contains('super-secret-password')));
+      expect(joinedLogs, isNot(contains('query-secret')));
+      expect(joinedLogs, isNot(contains('key-secret')));
     });
   });
 }

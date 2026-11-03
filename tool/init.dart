@@ -6,6 +6,7 @@ import 'dart:io';
 const _oldPackage = 'flutter_bloc_template';
 const _oldBundle = 'dev.invoketech.flutter_bloc_template';
 const _oldBundleCamel = 'dev.invoketech.flutterBlocTemplate';
+const _oldBundleIos = 'dev.invoketech.flutter-bloc-template';
 const _oldTitle = 'Flutter BLoC Template';
 const _oldTitleHr = 'Flutter BLoC predložak';
 const _oldName = 'Template';
@@ -125,6 +126,7 @@ String _transform(
   var out = content
       .replaceAll(_oldBundle, bundle)
       .replaceAll(_oldBundleCamel, bundle)
+      .replaceAll(_oldBundleIos, bundle)
       .replaceAll('package:$_oldPackage/', 'package:$package/')
       .replaceAll('${_oldPackage}_workspace', '${package}_workspace')
       .replaceAll(_oldTitle, name);
