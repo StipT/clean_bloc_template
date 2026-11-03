@@ -15,7 +15,7 @@ POLL_ATTEMPTS="${POLL_ATTEMPTS:-20}" # ~10 min
 count_unresolved() {
   jq '[.data.repository.pullRequest.reviewThreads.nodes[]
        | select(.isResolved == false)
-       | select((.comments.nodes[0].author.login // "") | startswith("copilot"))
+       | select(.comments.nodes[0].author.login == "copilot-pull-request-reviewer")
       ] | length' "$1"
 }
 
