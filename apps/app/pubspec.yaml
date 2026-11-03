@@ -60,7 +60,7 @@ flavorizr:
         applicationId: "dev.invoketech.flutter_bloc_template.dev"
         icon: "assets/icons/dev.png"
       ios:
-        bundleId: "dev.invoketech.flutter_bloc_template.dev"
+        bundleId: "dev.invoketech.flutter-bloc-template.dev"
         icon: "assets/icons/dev.png"
     staging:
       app:
