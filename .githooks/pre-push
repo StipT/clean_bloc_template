@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Formats all Dart code before a push. A push can't include uncommitted
+# changes, so if anything was reformatted the push is aborted: commit and retry.
+set -uo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+if ! dart format --set-exit-if-changed . >/dev/null 2>&1; then
+  echo "pre-push: dart format reformatted files. Commit them and push again." >&2
+  exit 1
+fi

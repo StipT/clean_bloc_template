@@ -95,6 +95,10 @@ melos analyze
 melos run format:check
 ```
 
+`melos bootstrap` also enables the git hooks in `.githooks` (`core.hooksPath`). The
+`pre-push` hook runs `dart format .`; if it reformats anything the push is aborted so you
+can commit the changes and push again. Bypass once with `git push --no-verify`.
+
 ### Flavors
 
 `dev`, `staging`, `prod` (flutter_flavorizr config lives in `apps/app/pubspec.yaml`;

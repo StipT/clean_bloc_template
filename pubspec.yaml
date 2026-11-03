@@ -16,6 +16,10 @@ dev_dependencies:
   melos: ^7.0.0
 
 melos:
+  command:
+    bootstrap:
+      hooks:
+        post: git config core.hooksPath .githooks
   scripts:
     analyze:
       description: Analyze all packages.
