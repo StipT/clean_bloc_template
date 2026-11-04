@@ -50,11 +50,32 @@ class PostsView extends StatelessWidget {
           message: l10n.postsEmpty,
         ),
         PostsStatus.loaded => ListView.separated(
+          padding: const EdgeInsets.all(AppSpacing.md),
           itemCount: state.posts.length,
-          separatorBuilder: (_, _) => const Divider(height: 1),
-          itemBuilder: (_, i) => ListTile(
-            title: Text(state.posts[i].title),
-            subtitle: Text(state.posts[i].body),
+          separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
+          itemBuilder: (context, i) => DecoratedBox(
+            decoration: BoxDecoration(
+              color: context.colors.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: context.colors.divider),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    state.posts[i].title,
+                    style: context.typography.subtitle.bold!.brand,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    state.posts[i].body,
+                    style: context.typography.body.secondary,
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       },
