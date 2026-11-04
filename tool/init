@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Renames the template. See README ("Initialising a new app").
+set -euo pipefail
+here="$(cd "$(dirname "$0")" && pwd)"
+exec dart run "$here/init.dart" "$@"

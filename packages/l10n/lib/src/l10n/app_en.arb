@@ -1,0 +1,17 @@
+{
+  "@@locale": "en",
+  "settingsTitle": "Settings",
+  "languageLabel": "Language",
+  "languageSystem": "System default",
+  "languageEnglish": "English",
+  "languageCroatian": "Croatian",
+  "themeLabel": "Theme",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "postsTitle": "Posts",
+  "postsEmpty": "No posts yet",
+  "errorGeneric": "Something went wrong",
+  "retryLabel": "Retry",
+  "appTitle": "Flutter BLoC Template"
+}

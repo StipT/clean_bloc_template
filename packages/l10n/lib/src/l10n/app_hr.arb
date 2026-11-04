@@ -1,0 +1,17 @@
+{
+  "@@locale": "hr",
+  "settingsTitle": "Postavke",
+  "languageLabel": "Jezik",
+  "languageSystem": "Zadano sustava",
+  "languageEnglish": "Engleski",
+  "languageCroatian": "Hrvatski",
+  "themeLabel": "Tema",
+  "themeSystem": "Sustav",
+  "themeLight": "Svijetla",
+  "themeDark": "Tamna",
+  "postsTitle": "Objave",
+  "postsEmpty": "Još nema objava",
+  "errorGeneric": "Nešto je pošlo po zlu",
+  "retryLabel": "Pokušaj ponovno",
+  "appTitle": "Flutter BLoC predložak"
+}

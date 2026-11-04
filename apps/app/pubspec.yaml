@@ -1,0 +1,84 @@
+name: flutter_bloc_template
+description: Flutter BLoC Template
+publish_to: none
+version: 1.0.0+1
+resolution: workspace
+
+environment:
+  sdk: ^3.10.0
+
+dependencies:
+  bloc: ^9.0.0
+  core:
+  design_system:
+  equatable: ^2.0.7
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^9.1.0
+  flutter_localizations:
+    sdk: flutter
+  get_it: ^9.3.0
+  go_router: ^17.0.0
+  http: ^1.2.0
+  l10n:
+  navigation:
+  network:
+  shared_preferences: ^2.5.0
+
+dev_dependencies:
+  bloc_test: ^10.0.0
+  flutter_flavorizr: ^2.5.0
+  flutter_test:
+    sdk: flutter
+  mocktail: ^1.0.4
+  very_good_analysis: ^10.0.0
+
+flutter:
+  uses-material-design: true
+
+flavorizr:
+  ide: idea
+  instructions:
+    - assets:download
+    - assets:extract
+    - android:flavorizrGradle
+    - android:buildGradle
+    - android:androidManifest
+    - android:icons
+    - ios:xcconfig
+    - ios:buildTargets
+    - ios:schema
+    - ios:plist
+    - ios:icons
+    - assets:clean
+  flavors:
+    dev:
+      app:
+        name: "Template Dev"
+        icon: "assets/icons/dev.png"
+      android:
+        applicationId: "dev.invoketech.flutter_bloc_template.dev"
+        icon: "assets/icons/dev.png"
+      ios:
+        bundleId: "dev.invoketech.flutter-bloc-template.dev"
+        icon: "assets/icons/dev.png"
+    staging:
+      app:
+        name: "Template Staging"
+        icon: "assets/icons/staging.png"
+      android:
+        applicationId: "dev.invoketech.flutter_bloc_template.staging"
+        icon: "assets/icons/staging.png"
+      ios:
+        bundleId: "dev.invoketech.flutter_bloc_template.staging"
+        icon: "assets/icons/staging.png"
+    prod:
+      app:
+        name: "Template"
+        icon: "assets/icons/prod.png"
+      android:
+        applicationId: "dev.invoketech.flutter_bloc_template"
+        icon: "assets/icons/prod.png"
+      ios:
+        bundleId: "dev.invoketech.flutter_bloc_template"
+        icon: "assets/icons/prod.png"
