@@ -1,4 +1,9 @@
 export 'src/app_button.dart';
 export 'src/app_text_field.dart';
 export 'src/state_widgets.dart';
+export 'src/theme/app_colors.dart';
+export 'src/theme/app_theme_data.dart';
+export 'src/theme/app_typography.dart';
+export 'src/theme/augmented_color.dart';
+export 'src/theme/augmented_text_style.dart';
 export 'src/tokens.dart';
